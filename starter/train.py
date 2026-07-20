@@ -11,7 +11,6 @@ HARD CAPS (checked at grading, violations = disqualified run):
     python train.py --data ../data/train_corpus.txt --steps 2000 --out ckpt.pt
 """
 import argparse
-import math
 import time
 
 import torch
@@ -64,9 +63,6 @@ def main():
     t0 = time.time()
     losses = []
     for step in range(1, args.steps + 1):
-        lr = lr_for_step(step, args.steps, args.lr)
-        for group in opt.param_groups:
-            group["lr"] = lr
         x, y = get_batch(ids, cfg.block_size, args.batch, device)
         _, loss = model(x, y)
         opt.zero_grad(set_to_none=True)
