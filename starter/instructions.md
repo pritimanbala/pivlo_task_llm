@@ -1,4 +1,4 @@
-# Starter
+# Starter ->
 
 Your loop:
   python train.py --data ../data/train_corpus.txt --steps 2000 --out ckpt.pt
