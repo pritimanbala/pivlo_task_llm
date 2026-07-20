@@ -32,7 +32,7 @@ class ByteTokenizer:
     def save(self, path):
         with open(path, "w") as f:
             json.dump({"type": "byte"}, f)
-
+#
 
 def load(path=None):
     """Return the tokenizer used by evaluate.py. Replace as needed."""

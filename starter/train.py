@@ -58,7 +58,7 @@ def main():
 
     # baseline choices, all questionable on purpose:
     opt = torch.optim.Adam(model.parameters(), lr=args.lr)  # constant LR,
-    # no warmup, no schedule, no weight decay, no gradient clipping.
+    # no warmup, no schedule, no weight decay, no gradient clipping. #
 
     model.train()
     t0 = time.time()
