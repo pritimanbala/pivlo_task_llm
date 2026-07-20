@@ -2,7 +2,7 @@
 
 This repository is a small language-model training and evaluation starter project. The current code is intentionally simple: it trains a byte-level, GPT-style autoregressive model in pure PyTorch and evaluates checkpoints using bits per byte (BPB). The baseline works, but the comments in the code call out that it is deliberately mediocre and intended to be improved within the assignment caps.
 
-## Current state of the code
+## Current state of the code ->
 
 - **Training pipeline:** `starter/train.py` reads the provided training corpus, tokenizes it with the byte tokenizer, creates random next-token prediction batches, trains a GPT model on CPU, and saves a checkpoint containing the model weights, config, step count, and loss curve.
 - **Model:** `starter/model.py` defines a compact transformer/GPT model with token and position embeddings, causal self-attention blocks, MLP blocks, final layer norm, and a linear language-modeling head.

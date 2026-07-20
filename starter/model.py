@@ -87,6 +87,6 @@ class GPT(nn.Module):
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)),
                                    targets.reshape(-1))
         return logits, loss
-
+#
     def n_params(self):
         return sum(p.numel() for p in self.parameters())
