@@ -25,6 +25,7 @@ class SelfAttention(nn.Module):
         self.n_head = cfg.n_head
         self.qkv = nn.Linear(cfg.n_embd, 3 * cfg.n_embd)
         self.proj = nn.Linear(cfg.n_embd, cfg.n_embd)
+        self.proj.RESIDUAL_SCALE_INIT = True
         self.drop = nn.Dropout(cfg.dropout)
 
     def forward(self, x):
@@ -44,9 +45,11 @@ class Block(nn.Module):
         self.ln1 = nn.LayerNorm(cfg.n_embd)
         self.attn = SelfAttention(cfg)
         self.ln2 = nn.LayerNorm(cfg.n_embd)
+        mlp_proj = nn.Linear(4 * cfg.n_embd, cfg.n_embd)
+        mlp_proj.RESIDUAL_SCALE_INIT = True
         self.mlp = nn.Sequential(
             nn.Linear(cfg.n_embd, 4 * cfg.n_embd), nn.GELU(),
-            nn.Linear(4 * cfg.n_embd, cfg.n_embd), nn.Dropout(cfg.dropout))
+            mlp_proj, nn.Dropout(cfg.dropout))
 
     def forward(self, x):
         x = x + self.attn(self.ln1(x))
@@ -69,10 +72,14 @@ class GPT(nn.Module):
         self.apply(self._init)
 
     def _init(self, m):
-        # baseline init: plain normal, one std for everything
-        if isinstance(m, (nn.Linear, nn.Embedding)):
-            nn.init.normal_(m.weight, mean=0.0, std=0.05)
-            if isinstance(m, nn.Linear) and m.bias is not None:
+        if isinstance(m, nn.Embedding):
+            nn.init.normal_(m.weight, mean=0.0, std=0.02)
+        elif isinstance(m, nn.Linear):
+            std = 0.02
+            if getattr(m, "RESIDUAL_SCALE_INIT", False):
+                std = 0.02 / math.sqrt(2 * self.cfg.n_layer)
+            nn.init.normal_(m.weight, mean=0.0, std=std)
+            if m.bias is not None:
                 nn.init.zeros_(m.bias)
 
     def forward(self, idx, targets=None):
