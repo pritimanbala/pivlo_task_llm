@@ -23,17 +23,6 @@ MAX_STEPS = 2000
 MAX_PARAMS = 2_000_000
 
 
-def lr_for_step(step, total_steps, initial_lr):
-    warmup_steps = max(1, int(0.05 * total_steps))
-    min_lr = 0.1 * initial_lr
-    if step <= warmup_steps:
-        return initial_lr * step / warmup_steps
-    if total_steps == warmup_steps:
-        return min_lr
-    progress = (step - warmup_steps) / (total_steps - warmup_steps)
-    cosine = 0.5 * (1.0 + math.cos(math.pi * progress))
-    return min_lr + (initial_lr - min_lr) * cosine
-
 
 def get_batch(ids, block, batch, device):
     ix = torch.randint(len(ids) - block - 1, (batch,))
