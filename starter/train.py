@@ -22,6 +22,7 @@ MAX_STEPS = 2000
 MAX_PARAMS = 2_000_000
 
 
+
 def get_batch(ids, block, batch, device):
     ix = torch.randint(len(ids) - block - 1, (batch,))
     x = torch.stack([ids[i:i + block] for i in ix])
