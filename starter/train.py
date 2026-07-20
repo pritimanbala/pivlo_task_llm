@@ -11,6 +11,7 @@ HARD CAPS (checked at grading, violations = disqualified run):
     python train.py --data ../data/train_corpus.txt --steps 2000 --out ckpt.pt
 """
 import argparse
+import math
 import time
 
 import torch
@@ -57,18 +58,20 @@ def main():
     print(f"model: {n:,} params")
     assert n <= MAX_PARAMS, f"cap: max {MAX_PARAMS:,} params"
 
-    # baseline choices, all questionable on purpose:
-    opt = torch.optim.Adam(model.parameters(), lr=args.lr)  # constant LR,
-    # no warmup, no schedule, no weight decay, no gradient clipping.
+    opt = torch.optim.AdamW(model.parameters(), lr=args.lr)
 
     model.train()
     t0 = time.time()
     losses = []
     for step in range(1, args.steps + 1):
+        lr = lr_for_step(step, args.steps, args.lr)
+        for group in opt.param_groups:
+            group["lr"] = lr
         x, y = get_batch(ids, cfg.block_size, args.batch, device)
         _, loss = model(x, y)
         opt.zero_grad(set_to_none=True)
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         opt.step()
         losses.append(loss.item())
         if step % args.log_every == 0 or step == 1:
