@@ -219,6 +219,9 @@ Now i will try the following things ->
 1. Better initialization
 2. Increase context length, block size = 128 -> 192
 
+And i am sorry, i wanted to do this but time was up.
+so yeah, THis is the end :-)
+
 
 
 
