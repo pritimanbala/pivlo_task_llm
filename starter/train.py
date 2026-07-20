@@ -11,6 +11,7 @@ HARD CAPS (checked at grading, violations = disqualified run):
     python train.py --data ../data/train_corpus.txt --steps 2000 --out ckpt.pt
 """
 import argparse
+import math
 import time
 
 import torch
@@ -20,6 +21,18 @@ import tokenizer as tokenizer_mod
 
 MAX_STEPS = 2000
 MAX_PARAMS = 2_000_000
+
+
+def lr_for_step(step, total_steps, initial_lr):
+    warmup_steps = max(1, int(0.05 * total_steps))
+    min_lr = 0.1 * initial_lr
+    if step <= warmup_steps:
+        return initial_lr * step / warmup_steps
+    if total_steps == warmup_steps:
+        return min_lr
+    progress = (step - warmup_steps) / (total_steps - warmup_steps)
+    cosine = 0.5 * (1.0 + math.cos(math.pi * progress))
+    return min_lr + (initial_lr - min_lr) * cosine
 
 
 def get_batch(ids, block, batch, device):
@@ -56,18 +69,20 @@ def main():
     print(f"model: {n:,} params")
     assert n <= MAX_PARAMS, f"cap: max {MAX_PARAMS:,} params"
 
-    # baseline choices, all questionable on purpose:
-    opt = torch.optim.Adam(model.parameters(), lr=args.lr)  # constant LR,
-    # no warmup, no schedule, no weight decay, no gradient clipping.
+    opt = torch.optim.AdamW(model.parameters(), lr=args.lr)
 
     model.train()
     t0 = time.time()
     losses = []
     for step in range(1, args.steps + 1):
+        lr = lr_for_step(step, args.steps, args.lr)
+        for group in opt.param_groups:
+            group["lr"] = lr
         x, y = get_batch(ids, cfg.block_size, args.batch, device)
         _, loss = model(x, y)
         opt.zero_grad(set_to_none=True)
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         opt.step()
         losses.append(loss.item())
         if step % args.log_every == 0 or step == 1:
